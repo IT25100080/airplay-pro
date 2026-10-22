@@ -9,7 +9,7 @@
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <AssemblyName>AirPlayPro</AssemblyName>
     <RootNamespace>AirPlayPro</RootNamespace>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Product>AirPlay Pro</Product>
     <Description>AirPlay screen mirroring and audio receiver for Windows</Description>
     <!-- Lets the project compile on macOS/Linux too (CI and local checks). -->

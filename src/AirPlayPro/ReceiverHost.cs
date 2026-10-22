@@ -175,6 +175,16 @@ public sealed class ReceiverHost : IDisposable
         if (File.Exists(caBundle))
             psi.Environment["SSL_CERT_FILE"] = caBundle;
         psi.Environment["GSETTINGS_SCHEMA_DIR"] = Path.Combine(EngineDir, "share", "glib-2.0", "schemas");
+
+        // UxPlay 1.74 picks the YouTube audio language from LANGUAGE/LC_ALL/LANG and aborts
+        // in -hls mode when none is set, which is the norm on Windows. Use the Windows
+        // display language unless the user has set one of these themselves.
+        string[] langVars = { "LANGUAGE", "LC_ALL", "LC_MESSAGES", "LANG" };
+        if (langVars.All(v => string.IsNullOrEmpty(Environment.GetEnvironmentVariable(v))))
+        {
+            string culture = System.Globalization.CultureInfo.CurrentUICulture.Name;
+            psi.Environment["LANG"] = (string.IsNullOrEmpty(culture) ? "en-US" : culture).Replace('-', '_');
+        }
     }
 
     private void OnOutput(string? line)
