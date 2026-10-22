@@ -20,6 +20,11 @@ public sealed class AppSettings
     public bool YouTubeStreaming { get; set; } = true;
     public string ExtraArgs { get; set; } = "";
     public bool StartReceiverOnLaunch { get; set; } = true;
+    /// <summary>
+    /// Fixed AirPlay device ID (MAC-style). Apple devices remember receivers by it, so it
+    /// must not change between runs; created once on first launch.
+    /// </summary>
+    public string DeviceId { get; set; } = "";
 
     public static readonly string[] VideoSinks = { "d3d12videosink", "d3d11videosink", "glimagesink", "autovideosink" };
     public static readonly string[] AudioSinks = { "wasapisink", "directsoundsink", "autoaudiosink" };
@@ -33,16 +38,32 @@ public sealed class AppSettings
 
     public static AppSettings Load()
     {
+        AppSettings? settings = null;
         try
         {
             if (File.Exists(FilePath))
-                return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath)) ?? new AppSettings();
+                settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath));
         }
         catch (Exception)
         {
             // A corrupt file shouldn't stop the receiver from starting; fall back to defaults.
         }
-        return new AppSettings();
+        settings ??= new AppSettings();
+
+        if (string.IsNullOrEmpty(settings.DeviceId))
+        {
+            settings.DeviceId = NewDeviceId();
+            try { settings.Save(); } catch (Exception) { }
+        }
+        return settings;
+    }
+
+    private static string NewDeviceId()
+    {
+        var bytes = new byte[6];
+        Random.Shared.NextBytes(bytes);
+        bytes[0] = (byte)((bytes[0] & 0xFC) | 0x02); // locally administered, unicast
+        return string.Join(":", bytes.Select(b => b.ToString("x2")));
     }
 
     public void Save()

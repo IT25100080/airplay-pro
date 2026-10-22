@@ -30,6 +30,7 @@ public sealed class ReceiverHost : IDisposable
     public static string EngineDir => Path.Combine(AppContext.BaseDirectory, "uxplay");
     public static string EngineExe => Path.Combine(EngineDir, "bin", "uxplay.exe");
     public static string LogPath => Path.Combine(AppSettings.DataDir, "receiver.log");
+    public static string KeyPath => Path.Combine(AppSettings.DataDir, "uxplay.pem");
 
     public void Start(AppSettings settings)
     {
@@ -114,6 +115,16 @@ public sealed class ReceiverHost : IDisposable
         args.Add("-n");
         args.Add(string.IsNullOrWhiteSpace(s.DeviceName) ? Environment.MachineName : s.DeviceName.Trim());
         if (!s.AppendHostname) args.Add("-nh");
+
+        // Same identity every run: without a stored key UxPlay makes a new one on each
+        // start, and Apple devices that paired before then ask for a PIN again.
+        if (!string.IsNullOrEmpty(s.DeviceId))
+        {
+            args.Add("-m");
+            args.Add(s.DeviceId);
+        }
+        args.Add("-key");
+        args.Add(KeyPath);
 
         // Fixed legacy ports (TCP 7000/7001/7100, UDP 6000/6001/7011) so the
         // installer's firewall rules always match.
