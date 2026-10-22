@@ -74,7 +74,7 @@ cmake --build "$SRC/build"
 # --- Package -----------------------------------------------------------------
 rm -rf "$OUT"
 mkdir -p "$OUT/bin" "$OUT/lib/gstreamer-1.0" "$OUT/libexec/gstreamer-1.0" "$OUT/licenses" \
-  "$OUT/lib/gio/modules" "$OUT/etc/ssl/certs"
+  "$OUT/lib/gio/modules" "$OUT/etc/ssl/certs" "$OUT/share/glib-2.0/schemas"
 
 cp "$SRC/build/uxplay.exe" "$OUT/bin/"
 cp "$PREFIX"/lib/gstreamer-1.0/*.dll "$OUT/lib/gstreamer-1.0/"
@@ -83,8 +83,18 @@ cp "$PREFIX/libexec/gstreamer-1.0/gst-plugin-scanner.exe" "$OUT/libexec/gstreame
 # YouTube streaming (-hls): the soup plugin loads libsoup at runtime (invisible to
 # ntldd), and HTTPS needs GLib's TLS module plus a CA bundle.
 cp "$PREFIX"/bin/libsoup-3.0-*.dll "$OUT/bin/"
-cp "$PREFIX"/lib/gio/modules/*.dll "$OUT/lib/gio/modules/"
+# Only the TLS backend: glib-networking's GNOME/libproxy proxy modules need desktop
+# GSettings schemas and abort the engine with "No GSettings schemas are installed".
+shopt -s nullglob
+tls_modules=("$PREFIX"/lib/gio/modules/libgioopenssl*.dll "$PREFIX"/lib/gio/modules/libgiognutls*.dll)
+shopt -u nullglob
+(( ${#tls_modules[@]} )) || { echo "!! no GIO TLS module found in $PREFIX/lib/gio/modules"; exit 1; }
+cp "${tls_modules[@]}" "$OUT/lib/gio/modules/"
 cp "$PREFIX/etc/ssl/certs/ca-bundle.crt" "$OUT/etc/ssl/certs/"
+# GLib's own schemas, so anything else that touches GSettings finds them too.
+if [[ -f "$PREFIX/share/glib-2.0/schemas/gschemas.compiled" ]]; then
+  cp "$PREFIX/share/glib-2.0/schemas/gschemas.compiled" "$OUT/share/glib-2.0/schemas/"
+fi
 
 # Collect every MSYS2 DLL that uxplay.exe, the scanner or any plugin depends on.
 # (ntldd -R walks the dependency tree; system DLLs from C:\Windows are skipped.)
@@ -107,7 +117,10 @@ for f in bin/libsoup-3.0-0.dll lib/gstreamer-1.0/libgstsoup.dll lib/gstreamer-1.
          etc/ssl/certs/ca-bundle.crt; do
   [[ -f "$OUT/$f" ]] || { echo "!! missing $f (needed for YouTube streaming)"; exit 1; }
 done
-ls "$OUT"/lib/gio/modules/*.dll >/dev/null || { echo "!! no GIO TLS module bundled"; exit 1; }
+if ls "$OUT"/lib/gio/modules/ | grep -qiE "proxy"; then
+  echo "!! a GIO proxy module was bundled; it crashes the engine without GSettings schemas"; exit 1
+fi
+echo ">> GIO modules: $(ls "$OUT"/lib/gio/modules/ | tr '\n' ' ')"
 
 cp "$SRC/LICENSE" "$OUT/licenses/UxPlay-LICENSE.txt"
 git -C "$SRC" rev-parse HEAD > "$OUT/licenses/UxPlay-VERSION.txt"

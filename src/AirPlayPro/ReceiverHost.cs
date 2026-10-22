@@ -163,6 +163,7 @@ public sealed class ReceiverHost : IDisposable
         string caBundle = Path.Combine(EngineDir, "etc", "ssl", "certs", "ca-bundle.crt");
         if (File.Exists(caBundle))
             psi.Environment["SSL_CERT_FILE"] = caBundle;
+        psi.Environment["GSETTINGS_SCHEMA_DIR"] = Path.Combine(EngineDir, "share", "glib-2.0", "schemas");
     }
 
     private void OnOutput(string? line)
