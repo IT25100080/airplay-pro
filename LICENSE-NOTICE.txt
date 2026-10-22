@@ -1,0 +1,20 @@
+AirPlay Pro
+===========
+
+AirPlay Pro is a Windows tray app that runs the open-source UxPlay AirPlay
+receiver (https://github.com/FDH2/UxPlay).
+
+UxPlay is licensed under the GNU General Public License v3.0. Because AirPlay Pro
+ships UxPlay, AirPlay Pro as a whole is also distributed under the GNU GPL v3.0.
+The full UxPlay license is in uxplay\licenses\UxPlay-LICENSE.txt after
+installation. The UxPlay version that was built is recorded in
+uxplay\licenses\UxPlay-VERSION.txt, and its source is available from the link
+above.
+
+The bundled GStreamer libraries and plugins (https://gstreamer.freedesktop.org)
+are licensed under the LGPL, with some plugins under other open-source licenses.
+
+AirPlay, iPhone, iPad and Bonjour are trademarks of Apple Inc. AirPlay Pro is
+not affiliated with or endorsed by Apple.
+
+THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.
