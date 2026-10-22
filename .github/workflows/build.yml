@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: windows-latest
     env:
-      UXPLAY_REF: v1.73.7
+      UXPLAY_REF: b29411ffe30eb6b62b755af5ce6a03b2a25c2371
     steps:
       - uses: actions/checkout@v4
 
@@ -52,7 +52,7 @@ jobs:
         shell: pwsh
         run: |
           if (-not (Get-Command iscc -ErrorAction SilentlyContinue)) { choco install innosetup -y --no-progress }
-          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.1.0' }
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.2.0' }
           & iscc "/DAppVersion=$version" installer/AirPlayPro.iss
 
       - uses: actions/upload-artifact@v4

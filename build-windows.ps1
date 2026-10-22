@@ -10,12 +10,13 @@
 
 .EXAMPLE
   .\build-windows.ps1
-  .\build-windows.ps1 -UxPlayRef b29411f      # build on a UxPlay development snapshot
+  .\build-windows.ps1 -UxPlayRef v1.73.7      # build on the last stable UxPlay release
 #>
 param(
-    # UxPlay git tag, branch or commit to build.
-    [string]$UxPlayRef = "v1.73.7",
-    [string]$Version = "0.1.0",
+    # UxPlay tag, branch or full commit hash. Default: development snapshot with
+    # YouTube/HLS crash fixes. Use "v1.73.7" for the last stable release.
+    [string]$UxPlayRef = "b29411ffe30eb6b62b755af5ce6a03b2a25c2371",
+    [string]$Version = "0.2.0",
     # Don't install missing tools; fail instead.
     [switch]$NoInstall
 )

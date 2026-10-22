@@ -72,8 +72,8 @@ To build by hand on Windows:
    ```bash
    ./scripts/build-uxplay.sh dist/uxplay
    ```
-   This installs the needed MSYS2 packages, builds UxPlay (`UXPLAY_REF`, default
-   `v1.73.7`), and copies `uxplay.exe` with all its DLLs and GStreamer plugins into
+   This installs the needed MSYS2 packages, builds UxPlay (`UXPLAY_REF`, default: a
+   development snapshot from 2026-10-21 with YouTube fixes; `v1.73.7` is the last stable release), and copies `uxplay.exe` with all its DLLs and GStreamer plugins into
    `dist/uxplay`. You don't need Apple's Bonjour SDK. If it isn't installed, the
    script makes a small stand-in from Apple's open-source `dns_sd.h`, because UxPlay
    loads `dnssd.dll` at runtime.

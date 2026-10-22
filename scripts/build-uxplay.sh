@@ -6,7 +6,9 @@
 #   ./scripts/build-uxplay.sh [output-dir]
 #
 # Env vars:
-#   UXPLAY_REF         UxPlay git tag/branch to build (default: v1.73.7)
+#   UXPLAY_REF         UxPlay tag, branch or full commit hash to build. Default is a
+#                      development snapshot (2026-10-21) with YouTube/HLS crash fixes
+#                      that the last release, v1.73.7, doesn't have.
 #   BONJOUR_SDK_HOME   Apple's Bonjour SDK, if installed. If unset and not found in
 #                      the default location, a minimal stand-in is generated (UxPlay
 #                      loads dnssd.dll at runtime, so it only needs the header and
@@ -14,7 +16,7 @@
 #   SKIP_PACMAN=1      Don't install MSYS2 packages (CI installs them up front).
 set -euo pipefail
 
-UXPLAY_REF="${UXPLAY_REF:-v1.73.7}"
+UXPLAY_REF="${UXPLAY_REF:-b29411ffe30eb6b62b755af5ce6a03b2a25c2371}"
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT="$(realpath -m "${1:-$ROOT/dist/uxplay}")"
 WORK="$ROOT/.build"
@@ -47,6 +49,8 @@ LIBRARY dnssd.dll
 EXPORTS
 DNSServiceRegister
 DNSServiceRefDeallocate
+DNSServiceRefSockFD
+DNSServiceProcessResult
 TXTRecordCreate
 TXTRecordSetValue
 TXTRecordGetLength
@@ -61,14 +65,18 @@ echo ">> BONJOUR_SDK_HOME=$BONJOUR_SDK_HOME"
 
 # --- Build UxPlay ------------------------------------------------------------
 SRC="$WORK/UxPlay"
+# init + fetch (rather than clone --branch) so UXPLAY_REF can also be a commit hash.
 if [[ ! -d "$SRC/.git" ]]; then
-  git clone --depth 1 --branch "$UXPLAY_REF" https://github.com/FDH2/UxPlay.git "$SRC"
-else
-  git -C "$SRC" fetch --depth 1 origin "$UXPLAY_REF"
-  git -C "$SRC" checkout -q FETCH_HEAD
+  git init -q "$SRC"
+  git -C "$SRC" remote add origin https://github.com/FDH2/UxPlay.git
 fi
+git -C "$SRC" fetch -q --depth 1 origin "$UXPLAY_REF"
+git -C "$SRC" checkout -q --force FETCH_HEAD
 
-cmake -S "$SRC" -B "$SRC/build" -G Ninja -DCMAKE_BUILD_TYPE=Release
+# USE_DNS_SD: newer UxPlay defaults to its own mDNS code on Windows; keep using the
+# Bonjour service instead, which is what discovery has been tested with.
+rm -rf "$SRC/build"
+cmake -S "$SRC" -B "$SRC/build" -G Ninja -DCMAKE_BUILD_TYPE=Release -DUSE_DNS_SD=1
 cmake --build "$SRC/build"
 
 # --- Package -----------------------------------------------------------------
