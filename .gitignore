@@ -4,3 +4,4 @@ dist/
 .build/
 *.user
 .vs/
+.DS_Store
