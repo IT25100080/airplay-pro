@@ -54,6 +54,16 @@ builds `AirPlayPro-Setup-*.exe` on every push. Download it from the run's
 *Artifacts* section. Pushing a tag such as `v0.1.0` also attaches the installer
 to a GitHub Release.
 
+To build on a Windows PC with one command, open PowerShell in this folder and run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build-windows.ps1
+```
+
+It installs whatever is missing (MSYS2, .NET 8 SDK, Inno Setup 6) with `winget`,
+builds everything, and puts the installer in `dist\`. The first run takes 10–20
+minutes. Add `-UxPlayRef <tag-or-commit>` to build a different UxPlay version.
+
 To build by hand on Windows:
 
 1. Install [MSYS2](https://www.msys2.org), the [.NET 8 SDK](https://dotnet.microsoft.com/download)
@@ -87,6 +97,7 @@ src/AirPlayPro/         C# (.NET 8, WinForms) tray app
   SystemIntegration.cs  start at sign-in, Bonjour check, firewall repair
   TrayIcons.cs          icons drawn in code
 scripts/build-uxplay.sh builds and packages the UxPlay engine (MSYS2)
+build-windows.ps1       one-command local build on Windows
 installer/              Inno Setup script
 .github/workflows/      Windows CI build
 ```
