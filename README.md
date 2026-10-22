@@ -37,6 +37,7 @@ Right-click the icon for settings, the log and connection help.
 | Audio output | `wasapisink` (default), `directsoundsink`, `autoaudiosink` | `-as` |
 | Require a PIN | Show a PIN that the device must enter. Leave the PIN empty for a new random one each time. | `-pin` |
 | Let a new device take over | A second device can replace the current one | `-nohold` |
+| Play video from the YouTube app | The YouTube app's AirPlay button (iPhone/iPad) plays video, not just audio: the PC streams it straight from YouTube. On by default. AirPlay from a web browser still isn't supported, so use Screen Mirroring for that. | `-hls` |
 | Extra options | Passed to UxPlay unchanged, for advanced use | |
 
 The receiver always uses fixed ports so the firewall rule works:
@@ -99,6 +100,9 @@ installer/              Inno Setup script
 - **The PC appears but the connection fails.** Usually the firewall. Use *Fix firewall*.
 - **Black or stuttering video.** Try `d3d11videosink` under Video output.
 - **No sound.** Try `directsoundsink` under Audio output.
+- **YouTube app's AirPlay button plays sound but no picture.** Turn on *Play video from
+  the YouTube app* in Settings. AirPlay from YouTube in a web browser isn't supported;
+  use Screen Mirroring instead.
 - **More detail.** Add `-d` under Extra options and open the log.
 
 ## License

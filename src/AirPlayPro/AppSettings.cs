@@ -13,6 +13,11 @@ public sealed class AppSettings
     /// <summary>Fixed 4-digit PIN; empty means a new random PIN per connection.</summary>
     public string Pin { get; set; } = "";
     public bool AllowTakeover { get; set; } = true;
+    /// <summary>
+    /// Lets the YouTube app's AirPlay button play video: the PC streams it straight
+    /// from YouTube. Without it, that button only sends audio.
+    /// </summary>
+    public bool YouTubeStreaming { get; set; } = true;
     public string ExtraArgs { get; set; } = "";
     public bool StartReceiverOnLaunch { get; set; } = true;
 

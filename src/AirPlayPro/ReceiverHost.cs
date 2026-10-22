@@ -132,6 +132,7 @@ public sealed class ReceiverHost : IDisposable
         }
 
         if (s.AllowTakeover) args.Add("-nohold");
+        if (s.YouTubeStreaming) args.Add("-hls");
 
         if (!string.IsNullOrWhiteSpace(s.ExtraArgs))
             args.AddRange(s.ExtraArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
@@ -155,6 +156,13 @@ public sealed class ReceiverHost : IDisposable
         psi.Environment["GST_REGISTRY_1_0"] = Path.Combine(AppSettings.DataDir, "gst-registry.bin");
         if (File.Exists(scanner))
             psi.Environment["GST_PLUGIN_SCANNER_1_0"] = scanner;
+
+        // YouTube streaming fetches video over HTTPS, which needs GLib's TLS module
+        // and a CA bundle; both are bundled with the engine.
+        psi.Environment["GIO_MODULE_DIR"] = Path.Combine(EngineDir, "lib", "gio", "modules");
+        string caBundle = Path.Combine(EngineDir, "etc", "ssl", "certs", "ca-bundle.crt");
+        if (File.Exists(caBundle))
+            psi.Environment["SSL_CERT_FILE"] = caBundle;
     }
 
     private void OnOutput(string? line)

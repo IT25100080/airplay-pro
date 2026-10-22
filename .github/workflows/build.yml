@@ -26,6 +26,7 @@ jobs:
             openssl:p libplist:p
             gstreamer:p gst-plugins-base:p gst-plugins-good:p
             gst-plugins-bad:p gst-libav:p
+            libsoup3:p glib-networking:p ca-certificates:p
 
       - name: Build and package UxPlay engine
         shell: msys2 {0}

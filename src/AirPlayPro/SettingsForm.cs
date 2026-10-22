@@ -13,6 +13,7 @@ internal sealed class SettingsForm : Form
     private readonly CheckBox _requirePin = new() { Text = "Require a PIN to connect", AutoSize = true };
     private readonly TextBox _pin = new() { Width = 80, MaxLength = 4, PlaceholderText = "random" };
     private readonly CheckBox _takeover = new() { Text = "Let a new device take over from the current one", AutoSize = true };
+    private readonly CheckBox _youTube = new() { Text = "Play video from the YouTube app's AirPlay button", AutoSize = true };
     private readonly CheckBox _autoStart = new() { Text = "Start receiver when AirPlay Pro opens", AutoSize = true };
     private readonly CheckBox _withWindows = new() { Text = "Open AirPlay Pro when I sign in to Windows", AutoSize = true };
     private readonly TextBox _extra = new() { Width = 260, PlaceholderText = "advanced UxPlay options" };
@@ -48,6 +49,7 @@ internal sealed class SettingsForm : Form
         AddRow(grid, "", _requirePin);
         AddRow(grid, "PIN (4 digits):", _pin);
         AddRow(grid, "", _takeover);
+        AddRow(grid, "", _youTube);
         AddRow(grid, "", _autoStart);
         AddRow(grid, "", _withWindows);
         AddRow(grid, "Extra options:", _extra);
@@ -100,6 +102,7 @@ internal sealed class SettingsForm : Form
         _requirePin.Checked = _settings.RequirePin;
         _pin.Text = _settings.Pin;
         _takeover.Checked = _settings.AllowTakeover;
+        _youTube.Checked = _settings.YouTubeStreaming;
         _autoStart.Checked = _settings.StartReceiverOnLaunch;
         _withWindows.Checked = SystemIntegration.StartsWithWindows;
         _extra.Text = _settings.ExtraArgs;
@@ -124,6 +127,7 @@ internal sealed class SettingsForm : Form
         _settings.RequirePin = _requirePin.Checked;
         _settings.Pin = pin;
         _settings.AllowTakeover = _takeover.Checked;
+        _settings.YouTubeStreaming = _youTube.Checked;
         _settings.StartReceiverOnLaunch = _autoStart.Checked;
         _settings.ExtraArgs = _extra.Text.Trim();
 
