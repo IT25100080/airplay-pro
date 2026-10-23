@@ -8,8 +8,8 @@ namespace AirPlayPro;
 internal static class SystemIntegration
 {
     private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
-    private const string RunValue = "AirPlayPro";
-    public const string FirewallRuleName = "AirPlay Pro Receiver";
+    private const string RunValue = AppProfile.Id;
+    public const string FirewallRuleName = AppProfile.Name + " Receiver";
     public const string BonjourDownloadUrl = "https://support.apple.com/en-us/106380";
 
     public static bool StartsWithWindows
@@ -73,7 +73,7 @@ internal static class SystemIntegration
         try { Process.Start(new ProcessStartInfo(target) { UseShellExecute = true }); }
         catch (Exception ex)
         {
-            MessageBox.Show($"Couldn't open {target}:\n{ex.Message}", "AirPlay Pro",
+            MessageBox.Show($"Couldn't open {target}:\n{ex.Message}", AppProfile.Name,
                 MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
     }

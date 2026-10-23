@@ -6,11 +6,11 @@ internal static class Program
     private static void Main()
     {
         // Only one tray instance: two receivers would fight over the same ports.
-        using var mutex = new Mutex(true, @"Local\AirPlayPro.SingleInstance", out bool isFirst);
+        using var mutex = new Mutex(true, $@"Local\{AppProfile.Id}.SingleInstance", out bool isFirst);
         if (!isFirst)
         {
-            MessageBox.Show("AirPlay Pro is already running. Look for its icon in the system tray.",
-                "AirPlay Pro", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show($"{AppProfile.Name} is already running. Look for its icon in the system tray.",
+                AppProfile.Name, MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
 

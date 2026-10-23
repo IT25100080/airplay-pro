@@ -1,9 +1,9 @@
 ; Inno Setup script for AirPlay Pro.
 ; Expects the build output in ..\dist\app (tray app) and ..\dist\uxplay (engine).
-; Build with: iscc /DAppVersion=0.2.2 installer\AirPlayPro.iss
+; Build with: iscc /DAppVersion=0.3.0 installer\AirPlayPro.iss
 
 #ifndef AppVersion
-  #define AppVersion "0.2.2"
+  #define AppVersion "0.3.0"
 #endif
 
 [Setup]
@@ -47,7 +47,9 @@ Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""A
 Filename: "{app}\AirPlayPro.exe"; Description: "Start AirPlay Pro now"; Flags: nowait postinstall skipifsilent runasoriginaluser
 
 [UninstallRun]
-Filename: "{cmd}"; Parameters: "/c taskkill /f /im uxplay.exe & taskkill /f /im AirPlayPro.exe"; Flags: runhidden; RunOnceId: "KillApp"
+; Stop only this app and its own engine (the other AirPlay app may be running too).
+Filename: "{cmd}"; Parameters: "/c taskkill /f /im AirPlayPro.exe"; Flags: runhidden; RunOnceId: "KillApp"
+Filename: "powershell.exe"; Parameters: "-NoProfile -Command ""Get-Process uxplay -ErrorAction SilentlyContinue | Where-Object {{ $_.Path -like '{app}\*' } | Stop-Process -Force"""; Flags: runhidden; RunOnceId: "KillEngine"
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""AirPlay Pro Receiver"""; Flags: runhidden; RunOnceId: "DelFirewall"
 
 [Code]

@@ -13,6 +13,21 @@ iPhone / iPad / Mac ── Wi-Fi ──►  uxplay.exe (AirPlay protocol, GStrea
                     AirPlayPro.exe (tray icon, settings, auto-restart, logs)
 ```
 
+## AirPlay Speaker (audio only)
+
+**AirPlay Speaker** is a second, separate app built from the same code. It makes the PC
+act like a HomePod: an AirPlay **speaker** that plays sound from an iPhone, iPad or Mac
+through the PC's speakers. There's no video window, and it doesn't appear in Screen Mirroring.
+
+- **iPhone/iPad:** Control Center → the music card's AirPlay icon (or the AirPlay icon
+  in Music, Spotify, Podcasts…) → pick *<PC name> Speaker*.
+- **Mac:** menu bar → Control Center → Sound → pick *<PC name> Speaker* as the output,
+  or choose it from the AirPlay icon in Music.
+
+It installs separately (`AirPlaySpeaker-Setup-x.y.z.exe`), keeps its own settings in
+`%LOCALAPPDATA%\AirPlaySpeaker`, and uses its own ports (TCP/UDP 7200–7202), so it can
+run at the same time as AirPlay Pro. It also needs Bonjour (step 1 below).
+
 ## Using it
 
 1. Install **Bonjour Print Services for Windows** from Apple
@@ -90,6 +105,9 @@ and run `dist/app/AirPlayPro.exe`.
 
 ```
 src/AirPlayPro/         C# (.NET 8, WinForms) tray app
+  AppProfile.cs         what differs between AirPlay Pro and AirPlay Speaker
+src/AirPlaySpeaker/     AirPlay Speaker: same source, built with SPEAKER defined
+patches/                our fixes applied on top of UxPlay during the build
   TrayApp.cs            tray icon, menu, notifications
   ReceiverHost.cs       starts and watches uxplay.exe, sets up GStreamer, writes the log
   SettingsForm.cs       settings window

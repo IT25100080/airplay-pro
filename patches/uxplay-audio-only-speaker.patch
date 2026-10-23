@@ -1,0 +1,20 @@
+diff --git a/uxplay.cpp b/uxplay.cpp
+index be41031..08f0dac 100644
+--- a/uxplay.cpp
++++ b/uxplay.cpp
+@@ -2482,6 +2482,15 @@ static int start_dnssd(std::vector<char> hw_addr, std::string name) {
+ 
+     /* bit 27 of Features determines whether the AirPlay2 client-pairing protocol will be used (1) or not (0) */
+     dnssd_set_airplay_features(dnssd, 27, (int) setup_legacy_pairing);
++
++    /* audio-only receiver (-vs 0): advertise as a speaker, so clients offer it as an
++       audio output but not for Screen Mirroring, video or photos */
++    if (!use_video) {
++        const int video_bits[] = { 0, 1, 4, 5, 7, 13 };  /* video, photo, HLS, slideshow, mirroring, photo preload */
++        for (int bit : video_bits) {
++            dnssd_set_airplay_features(dnssd, bit, 0);
++        }
++    }
+     return 0;
+ }
+ 

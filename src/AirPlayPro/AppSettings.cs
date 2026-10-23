@@ -4,7 +4,7 @@ namespace AirPlayPro;
 
 public sealed class AppSettings
 {
-    public string DeviceName { get; set; } = Environment.MachineName;
+    public string DeviceName { get; set; } = AppProfile.DefaultDeviceName;
     public bool AppendHostname { get; set; } = false;
     public bool Fullscreen { get; set; } = false;
     public string VideoSink { get; set; } = "d3d12videosink";
@@ -30,7 +30,7 @@ public sealed class AppSettings
     public static readonly string[] AudioSinks = { "wasapisink", "directsoundsink", "autoaudiosink" };
 
     public static string DataDir { get; } =
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "AirPlayPro");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), AppProfile.Id);
 
     private static string FilePath => Path.Combine(DataDir, "settings.json");
 

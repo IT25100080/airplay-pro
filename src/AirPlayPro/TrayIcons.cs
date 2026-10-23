@@ -38,11 +38,20 @@ internal static class TrayIcons
             g.Clear(Color.Transparent);
 
             using var pen = new Pen(Color.White, 2.5f) { LineJoin = LineJoin.Round };
-            using var screen = RoundedRect(new RectangleF(3, 4, 26, 18), 3);
-            g.DrawPath(pen, screen);
-
             using var fill = new SolidBrush(Color.White);
-            g.FillPolygon(fill, new PointF[] { new(16, 16), new(25, 29), new(7, 29) });
+            if (AppProfile.IsSpeaker)
+            {
+                // HomePod-style speaker: rounded body with the touch surface on top.
+                using var body = RoundedRect(new RectangleF(5, 7, 20, 23), 8);
+                g.DrawPath(pen, body);
+                g.FillEllipse(fill, 10, 10, 10, 5);
+            }
+            else
+            {
+                using var screen = RoundedRect(new RectangleF(3, 4, 26, 18), 3);
+                g.DrawPath(pen, screen);
+                g.FillPolygon(fill, new PointF[] { new(16, 16), new(25, 29), new(7, 29) });
+            }
 
             using var dot = new SolidBrush(accent);
             g.FillEllipse(dot, 20, 0, 12, 12);

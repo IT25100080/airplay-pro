@@ -28,7 +28,7 @@ internal sealed class TrayApp : ApplicationContext
         menu.Items.Add("Fix firewall (needs admin)…", null, (_, _) => RepairFirewall());
         menu.Items.Add("Help: iPhone can't find this PC", null, (_, _) => ShowDiscoveryHelp());
         menu.Items.Add(new ToolStripSeparator());
-        menu.Items.Add("Quit AirPlay Pro", null, (_, _) => Quit());
+        menu.Items.Add($"Quit {AppProfile.Name}", null, (_, _) => Quit());
 
         _tray = new NotifyIcon
         {
@@ -66,7 +66,7 @@ internal sealed class TrayApp : ApplicationContext
 
         _status.Text = text.Length > 120 ? text[..117] + "…" : text;
         // NotifyIcon tooltips are limited to 127 characters.
-        string tip = $"AirPlay Pro – {text}";
+        string tip = $"{AppProfile.Name} – {text}";
         _tray.Text = tip.Length > 127 ? tip[..124] + "…" : tip;
         _tray.Icon = TrayIcons.For(state);
 
@@ -74,7 +74,7 @@ internal sealed class TrayApp : ApplicationContext
         _toggle.Text = running ? "Turn receiver off" : "Turn receiver on";
 
         if (state == ReceiverState.Error)
-            _tray.ShowBalloonTip(8000, "AirPlay Pro", _receiver.LastError ?? "The receiver stopped.", ToolTipIcon.Error);
+            _tray.ShowBalloonTip(8000, AppProfile.Name, _receiver.LastError ?? "The receiver stopped.", ToolTipIcon.Error);
     }
 
     private void ToggleReceiver()
@@ -112,13 +112,13 @@ internal sealed class TrayApp : ApplicationContext
     {
         if (SystemIntegration.RepairFirewall())
         {
-            _tray.ShowBalloonTip(5000, "AirPlay Pro", "Firewall rule updated.", ToolTipIcon.Info);
+            _tray.ShowBalloonTip(5000, AppProfile.Name, "Firewall rule updated.", ToolTipIcon.Info);
             if (_receiver.State is not (ReceiverState.Stopped or ReceiverState.Error))
                 _receiver.Restart(_settings);
         }
         else
         {
-            _tray.ShowBalloonTip(5000, "AirPlay Pro", "The firewall rule wasn't changed.", ToolTipIcon.Warning);
+            _tray.ShowBalloonTip(5000, AppProfile.Name, "The firewall rule wasn't changed.", ToolTipIcon.Warning);
         }
     }
 
@@ -129,14 +129,16 @@ internal sealed class TrayApp : ApplicationContext
             : "✘ Bonjour is NOT installed. Install \"Bonjour Print Services for Windows\" from Apple (Yes opens the download page).";
 
         var answer = MessageBox.Show(
-            "For your iPhone/iPad to see this PC in Screen Mirroring:\n\n" +
+            (AppProfile.IsSpeaker
+                ? "For your iPhone/iPad/Mac to see this PC as an AirPlay speaker:\n\n"
+                : "For your iPhone/iPad to see this PC in Screen Mirroring:\n\n") +
             $"{bonjour}\n\n" +
             "• Both devices must be on the same Wi-Fi/network (not a guest network).\n" +
             "• Windows must treat that network as Private: Settings → Network & internet → your network → Private network.\n" +
-            "• The firewall must allow AirPlay Pro (tray menu → Fix firewall).\n" +
+            $"• The firewall must allow {AppProfile.Name} (tray menu → Fix firewall).\n" +
             "• Some routers block device discovery (\"AP/client isolation\", \"multicast filtering\").\n\n" +
             "Open Apple's Bonjour download page now?",
-            "AirPlay Pro – connection help",
+            $"{AppProfile.Name} – connection help",
             MessageBoxButtons.YesNo, MessageBoxIcon.Information);
 
         if (answer == DialogResult.Yes)

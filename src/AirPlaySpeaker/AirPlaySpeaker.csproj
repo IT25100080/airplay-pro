@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Same source as AirPlay Pro, built in speaker (audio-only) mode; see AppProfile.cs. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <AssemblyName>AirPlaySpeaker</AssemblyName>
+    <RootNamespace>AirPlayPro</RootNamespace>
+    <Version>0.3.0</Version>
+    <Product>AirPlay Speaker</Product>
+    <Description>AirPlay audio receiver for Windows: the PC appears as an AirPlay speaker</Description>
+    <DefineConstants>$(DefineConstants);SPEAKER</DefineConstants>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\AirPlayPro\*.cs" />
+  </ItemGroup>
+
+</Project>

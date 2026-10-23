@@ -1,12 +1,12 @@
 <#
 .SYNOPSIS
-  Builds AirPlayPro-Setup-<version>.exe on this Windows PC, no GitHub needed.
+  Builds AirPlayPro-Setup-<version>.exe and AirPlaySpeaker-Setup-<version>.exe on this Windows PC, no GitHub needed.
 
 .DESCRIPTION
   1. Installs any missing build tools with winget: MSYS2, .NET 8 SDK, Inno Setup 6.
   2. Builds the UxPlay engine in MSYS2 (scripts/build-uxplay.sh).
-  3. Builds the tray app and the installer.
-  The installer ends up in .\dist.
+  3. Builds both tray apps (AirPlay Pro and AirPlay Speaker) and their installers.
+  The installers end up in .\dist.
 
 .EXAMPLE
   .\build-windows.ps1
@@ -16,7 +16,7 @@ param(
     # UxPlay tag, branch or full commit hash. Default: development snapshot with
     # YouTube/HLS crash fixes. Use "v1.73.7" for the last stable release.
     [string]$UxPlayRef = "b29411ffe30eb6b62b755af5ce6a03b2a25c2371",
-    [string]$Version = "0.2.2",
+    [string]$Version = "0.3.0",
     # Don't install missing tools; fail instead.
     [switch]$NoInstall
 )
@@ -87,21 +87,32 @@ try {
     Invoke-Msys "UXPLAY_REF='$UxPlayRef' ./scripts/build-uxplay.sh dist/uxplay"
     Invoke-Msys "./dist/uxplay/bin/uxplay.exe -h | head -2"
 
-    # --- Tray app --------------------------------------------------------------
-    Step "Building the tray app"
-    if (Test-Path "$Root\dist\app") { Remove-Item "$Root\dist\app" -Recurse -Force }
-    dotnet publish "$Root\src\AirPlayPro\AirPlayPro.csproj" -c Release -r win-x64 --self-contained true `
-        -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "$Root\dist\app"
-    if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed." }
+    # --- Tray apps -------------------------------------------------------------
+    # AirPlay Pro (mirroring + video + audio) and AirPlay Speaker (audio only) share
+    # the same source and the same engine; each gets its own installer.
+    $apps = @(
+        @{ Project = "AirPlayPro";     Out = "app";         Iss = "AirPlayPro.iss" },
+        @{ Project = "AirPlaySpeaker"; Out = "speaker-app"; Iss = "AirPlaySpeaker.iss" }
+    )
+    foreach ($a in $apps) {
+        Step "Building $($a.Project)"
+        $out = "$Root\dist\$($a.Out)"
+        if (Test-Path $out) { Remove-Item $out -Recurse -Force }
+        dotnet publish "$Root\src\$($a.Project)\$($a.Project).csproj" -c Release -r win-x64 --self-contained true `
+            -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o $out
+        if ($LASTEXITCODE -ne 0) { throw "dotnet publish failed for $($a.Project)." }
 
-    # --- Installer -------------------------------------------------------------
-    Step "Building the installer"
-    & $Iscc "/DAppVersion=$Version" "$Root\installer\AirPlayPro.iss"
-    if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed." }
+        Step "Building the $($a.Project) installer"
+        & $Iscc "/DAppVersion=$Version" "$Root\installer\$($a.Iss)"
+        if ($LASTEXITCODE -ne 0) { throw "Inno Setup failed for $($a.Project)." }
+    }
 }
 finally {
     Pop-Location
 }
 
-$setup = Get-ChildItem "$Root\dist\AirPlayPro-Setup-$Version.exe"
-Write-Host "`nDone: $($setup.FullName) ($([math]::Round($setup.Length / 1MB)) MB)" -ForegroundColor Green
+Write-Host ""
+foreach ($name in "AirPlayPro", "AirPlaySpeaker") {
+    $setup = Get-ChildItem "$Root\dist\$name-Setup-$Version.exe"
+    Write-Host "Done: $($setup.FullName) ($([math]::Round($setup.Length / 1MB)) MB)" -ForegroundColor Green
+}

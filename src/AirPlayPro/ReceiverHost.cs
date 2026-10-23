@@ -63,7 +63,7 @@ public sealed class ReceiverHost : IDisposable
     {
         if (!File.Exists(EngineExe))
         {
-            Fail($"Receiver engine not found at {EngineExe}. Reinstall AirPlay Pro.");
+            Fail($"Receiver engine not found at {EngineExe}. Reinstall {AppProfile.Name}.");
             return;
         }
 
@@ -113,7 +113,7 @@ public sealed class ReceiverHost : IDisposable
         var args = new List<string>();
 
         args.Add("-n");
-        args.Add(string.IsNullOrWhiteSpace(s.DeviceName) ? Environment.MachineName : s.DeviceName.Trim());
+        args.Add(string.IsNullOrWhiteSpace(s.DeviceName) ? AppProfile.DefaultDeviceName : s.DeviceName.Trim());
         if (!s.AppendHostname) args.Add("-nh");
 
         // Same identity every run: without a stored key UxPlay makes a new one on each
@@ -126,15 +126,15 @@ public sealed class ReceiverHost : IDisposable
         args.Add("-key");
         args.Add(KeyPath);
 
-        // Fixed legacy ports (TCP 7000/7001/7100, UDP 6000/6001/7011) so the
-        // installer's firewall rules always match.
+        // Fixed ports so the installer's firewall rule always matches.
         args.Add("-p");
+        if (AppProfile.BasePort.Length > 0) args.Add(AppProfile.BasePort);
 
         args.Add("-vs");
-        args.Add(s.VideoSink);
+        args.Add(AppProfile.IsSpeaker ? "0" : s.VideoSink);   // "0": audio only, no video window
         args.Add("-as");
         args.Add(s.AudioSink);
-        if (s.Fullscreen) args.Add("-fs");
+        if (s.Fullscreen && !AppProfile.IsSpeaker) args.Add("-fs");
 
         if (s.RequirePin)
         {
@@ -143,7 +143,7 @@ public sealed class ReceiverHost : IDisposable
         }
 
         if (s.AllowTakeover) args.Add("-nohold");
-        if (s.YouTubeStreaming) args.Add("-hls");
+        if (s.YouTubeStreaming && !AppProfile.IsSpeaker) args.Add("-hls");
 
         if (!string.IsNullOrWhiteSpace(s.ExtraArgs))
             args.AddRange(s.ExtraArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));

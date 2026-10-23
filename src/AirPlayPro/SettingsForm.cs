@@ -14,8 +14,8 @@ internal sealed class SettingsForm : Form
     private readonly TextBox _pin = new() { Width = 80, MaxLength = 4, PlaceholderText = "random" };
     private readonly CheckBox _takeover = new() { Text = "Let a new device take over from the current one", AutoSize = true };
     private readonly CheckBox _youTube = new() { Text = "Play video from the YouTube app's AirPlay button", AutoSize = true };
-    private readonly CheckBox _autoStart = new() { Text = "Start receiver when AirPlay Pro opens", AutoSize = true };
-    private readonly CheckBox _withWindows = new() { Text = "Open AirPlay Pro when I sign in to Windows", AutoSize = true };
+    private readonly CheckBox _autoStart = new() { Text = $"Start receiver when {AppProfile.Name} opens", AutoSize = true };
+    private readonly CheckBox _withWindows = new() { Text = $"Open {AppProfile.Name} when I sign in to Windows", AutoSize = true };
     private readonly TextBox _extra = new() { Width = 260, PlaceholderText = "advanced UxPlay options" };
 
     public AppSettings Result => _settings;
@@ -24,7 +24,7 @@ internal sealed class SettingsForm : Form
     {
         _settings = current.Clone();
 
-        Text = "AirPlay Pro Settings";
+        Text = $"{AppProfile.Name} Settings";
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = MinimizeBox = false;
         StartPosition = FormStartPosition.CenterScreen;
@@ -41,15 +41,19 @@ internal sealed class SettingsForm : Form
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
         grid.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
 
-        AddRow(grid, "Name on iPhone/iPad:", _name);
+        AddRow(grid, AppProfile.IsSpeaker ? "Speaker name:" : "Name on iPhone/iPad:", _name);
         AddRow(grid, "", _appendHost);
-        AddRow(grid, "Video output:", _video);
-        AddRow(grid, "", _fullscreen);
+        if (!AppProfile.IsSpeaker)
+        {
+            AddRow(grid, "Video output:", _video);
+            AddRow(grid, "", _fullscreen);
+        }
         AddRow(grid, "Audio output:", _audio);
         AddRow(grid, "", _requirePin);
         AddRow(grid, "PIN (4 digits):", _pin);
         AddRow(grid, "", _takeover);
-        AddRow(grid, "", _youTube);
+        if (!AppProfile.IsSpeaker)
+            AddRow(grid, "", _youTube);
         AddRow(grid, "", _autoStart);
         AddRow(grid, "", _withWindows);
         AddRow(grid, "Extra options:", _extra);
@@ -119,7 +123,7 @@ internal sealed class SettingsForm : Form
             return;
         }
 
-        _settings.DeviceName = string.IsNullOrWhiteSpace(_name.Text) ? Environment.MachineName : _name.Text.Trim();
+        _settings.DeviceName = string.IsNullOrWhiteSpace(_name.Text) ? AppProfile.DefaultDeviceName : _name.Text.Trim();
         _settings.AppendHostname = _appendHost.Checked;
         _settings.Fullscreen = _fullscreen.Checked;
         _settings.VideoSink = (string)_video.SelectedItem!;

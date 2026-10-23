@@ -42,26 +42,34 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Publish tray app
-        run: >
-          dotnet publish src/AirPlayPro/AirPlayPro.csproj -c Release -r win-x64
-          --self-contained true -p:PublishSingleFile=true
-          -p:IncludeNativeLibrariesForSelfExtract=true -o dist/app
+      - name: Publish tray apps
+        run: |
+          dotnet publish src/AirPlayPro/AirPlayPro.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o dist/app
+          dotnet publish src/AirPlaySpeaker/AirPlaySpeaker.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o dist/speaker-app
 
       - name: Build installer
         shell: pwsh
         run: |
           if (-not (Get-Command iscc -ErrorAction SilentlyContinue)) { choco install innosetup -y --no-progress }
-          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.2.2' }
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.3.0' }
           & iscc "/DAppVersion=$version" installer/AirPlayPro.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & iscc "/DAppVersion=$version" installer/AirPlaySpeaker.iss
 
       - uses: actions/upload-artifact@v4
         with:
           name: AirPlayPro-Setup
           path: dist/AirPlayPro-Setup-*.exe
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: AirPlaySpeaker-Setup
+          path: dist/AirPlaySpeaker-Setup-*.exe
+
       - name: Attach installer to release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/AirPlayPro-Setup-*.exe
+          files: |
+            dist/AirPlayPro-Setup-*.exe
+            dist/AirPlaySpeaker-Setup-*.exe
