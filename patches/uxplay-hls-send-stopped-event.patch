@@ -1,0 +1,67 @@
+diff --git a/lib/fcup_request.h b/lib/fcup_request.h
+index b91e78d..bb91f2f 100644
+--- a/lib/fcup_request.h
++++ b/lib/fcup_request.h
+@@ -67,6 +67,49 @@ char *create_fcup_request(const char *url, int request_id, const char *client_se
+     return plist_xml; //needs to be freed after use
+ }
+ 
++/* Tells the client that the HLS video changed state, as an Apple TV does on the reverse
++   "event" connection. The YouTube app waits for "stopped" when a video ends before it
++   plays the next item of a playlist; without it, playback stalls after each video. */
++int send_video_state_event(raop_t *raop, const char *client_session_id, const char *state) {
++    int socket_fd = httpd_get_connection_socket_by_type(raop->httpd, CONNECTION_TYPE_EVENT, 1);
++    if (socket_fd <= 0 || !client_session_id) {
++        logger_log(raop->logger, LOGGER_DEBUG, "video state event \"%s\": no event connection", state);
++        return -1;
++    }
++
++    plist_t root = plist_new_dict();
++    plist_dict_set_item(root, "category", plist_new_string("video"));
++    plist_dict_set_item(root, "sessionID", plist_new_uint(1));
++    plist_dict_set_item(root, "state", plist_new_string(state));
++    if (!strcmp(state, "stopped")) {
++        plist_dict_set_item(root, "reason", plist_new_string("ended"));
++    }
++    char *plist_xml = NULL;
++    uint32_t datalen = 0;
++    plist_to_xml(root, &plist_xml, &datalen);
++    plist_free(root);
++
++    http_response_t *request = http_response_create();
++    http_response_reverse_request_init(request, "POST", "/event", "HTTP/1.1");
++    http_response_add_header(request, "X-Apple-Session-ID", client_session_id);
++    http_response_add_header(request, "Content-Type", "text/x-apple-plist+xml");
++    http_response_finish(request, plist_xml, (int) datalen);
++    free(plist_xml);
++
++    int requestlen = 0;
++    const char *http_request = http_response_get_data(request, &requestlen);
++    int send_len = send(socket_fd, http_request, requestlen, 0);
++    if (send_len < 0) {
++        int sock_err = SOCKET_GET_ERROR();
++        logger_log(raop->logger, LOGGER_ERR, "video state event: send error %d:%s",
++                   sock_err, SOCKET_ERROR_STRING(sock_err));
++    } else {
++        logger_log(raop->logger, LOGGER_INFO, "sent video state event \"%s\" to client", state);
++    }
++    http_response_destroy(request);
++    return send_len < 0 ? -1 : 0;
++}
++
+ int fcup_request(void *conn_opaque, const char *media_url, const char *client_session_id, int request_id) {
+ 
+     raop_conn_t *conn = (raop_conn_t *) conn_opaque;
+diff --git a/lib/raop.c b/lib/raop.c
+index a05c2e9..5296cce 100644
+--- a/lib/raop.c
++++ b/lib/raop.c
+@@ -872,6 +872,8 @@ void raop_destroy_airplay_video(raop_t *raop, int id) {
+ void raop_handle_eos(raop_t *raop) {
+     int id = raop->current_video;
+     assert (id >= 0);
++    /* let the client move on (e.g. to the next video of a YouTube playlist) */
++    send_video_state_event(raop, get_apple_session_id(raop->airplay_video[id]), "stopped");
+     raop_destroy_airplay_video(raop, id);
+     raop->current_video = -1;
+     /* reset video without deleting raop->airplay_video */

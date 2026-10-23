@@ -73,6 +73,18 @@ fi
 git -C "$SRC" fetch -q --depth 1 origin "$UXPLAY_REF"
 git -C "$SRC" checkout -q --force FETCH_HEAD
 
+# Our fixes on top of UxPlay (see patches/). A patch that no longer applies to the
+# chosen UXPLAY_REF is skipped with a warning rather than failing the build.
+for patch in "$ROOT"/patches/*.patch; do
+  [[ -f "$patch" ]] || continue
+  if git -C "$SRC" apply --check "$patch" 2>/dev/null; then
+    git -C "$SRC" apply "$patch"
+    echo ">> applied $(basename "$patch")"
+  else
+    echo "!! $(basename "$patch") does not apply to UxPlay $UXPLAY_REF; skipped"
+  fi
+done
+
 # USE_DNS_SD: newer UxPlay defaults to its own mDNS code on Windows; keep using the
 # Bonjour service instead, which is what discovery has been tested with.
 rm -rf "$SRC/build"

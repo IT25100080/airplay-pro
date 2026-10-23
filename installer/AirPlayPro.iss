@@ -1,9 +1,9 @@
 ; Inno Setup script for AirPlay Pro.
 ; Expects the build output in ..\dist\app (tray app) and ..\dist\uxplay (engine).
-; Build with: iscc /DAppVersion=0.2.1 installer\AirPlayPro.iss
+; Build with: iscc /DAppVersion=0.2.2 installer\AirPlayPro.iss
 
 #ifndef AppVersion
-  #define AppVersion "0.2.1"
+  #define AppVersion "0.2.2"
 #endif
 
 [Setup]
