@@ -1,9 +1,9 @@
 ; Inno Setup script for AirPlay Speaker (audio-only receiver; the PC shows up as an AirPlay speaker).
 ; Expects the build output in ..\dist\speaker-app (tray app) and ..\dist\uxplay (engine).
-; Build with: iscc /DAppVersion=0.3.0 installer\AirPlaySpeaker.iss
+; Build with: iscc /DAppVersion=0.3.1 installer\AirPlaySpeaker.iss
 
 #ifndef AppVersion
-  #define AppVersion "0.3.0"
+  #define AppVersion "0.3.1"
 #endif
 
 [Setup]

@@ -27,6 +27,15 @@ public sealed class ReceiverHost : IDisposable
     /// <summary>Raised on a thread-pool thread; marshal to the UI thread before touching controls.</summary>
     public event Action<ReceiverState>? StateChanged;
 
+    /// <summary>
+    /// A device asked to pair and must type this 4-digit PIN. UxPlay only prints it to its
+    /// console, which nobody sees in a tray app. Raised on a thread-pool thread.
+    /// </summary>
+    public event Action<string>? PinRequested;
+
+    private static readonly System.Text.RegularExpressions.Regex PinLine =
+        new(@"ENTER PIN = ""(\d{4})""", System.Text.RegularExpressions.RegexOptions.Compiled);
+
     public static string EngineDir => Path.Combine(AppContext.BaseDirectory, "uxplay");
     public static string EngineExe => Path.Combine(EngineDir, "bin", "uxplay.exe");
     public static string LogPath => Path.Combine(AppSettings.DataDir, "receiver.log");
@@ -191,6 +200,13 @@ public sealed class ReceiverHost : IDisposable
     {
         if (line is null) return;
         WriteLog(line);
+
+        var pin = PinLine.Match(line);
+        if (pin.Success)
+        {
+            PinRequested?.Invoke(pin.Groups[1].Value);
+            return;
+        }
 
         // UxPlay's console messages are not a stable API, so this is best effort:
         // it only drives the tray tooltip, never correctness.

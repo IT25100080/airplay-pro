@@ -38,6 +38,10 @@ internal sealed class TrayApp : ApplicationContext
         _tray.DoubleClick += (_, _) => ShowSettings();
 
         _receiver.StateChanged += state => _ui.Post(_ => OnStateChanged(state), null);
+        _receiver.PinRequested += pin => _ui.Post(_ => _tray.ShowBalloonTip(30000,
+            $"Enter PIN {pin} on your device",
+            $"An Apple device wants to connect to {AppProfile.Name}. Type {pin} on it. " +
+            "It only asks the first time.", ToolTipIcon.Info), null);
         OnStateChanged(ReceiverState.Stopped);
 
         if (!SystemIntegration.IsBonjourInstalled())

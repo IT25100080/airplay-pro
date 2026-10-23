@@ -10,7 +10,7 @@
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <AssemblyName>AirPlaySpeaker</AssemblyName>
     <RootNamespace>AirPlayPro</RootNamespace>
-    <Version>0.3.0</Version>
+    <Version>0.3.1</Version>
     <Product>AirPlay Speaker</Product>
     <Description>AirPlay audio receiver for Windows: the PC appears as an AirPlay speaker</Description>
     <DefineConstants>$(DefineConstants);SPEAKER</DefineConstants>
